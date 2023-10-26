@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,11 +23,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-mw#9as7t^s)@cgm3s&#%zlip3$1)#$!jp626_aua$&m4co15-!'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = []
 
+env = environ.Env()
+env_file = BASE_DIR / '.env'  # Assumes that .env is in the project's base directory
+env.read_env(env_file)
+
+# reading .env file
+environ.Env.read_env()
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env.bool('DEBUG', default=False)
 
 # Application definition
 
@@ -76,11 +84,11 @@ WSGI_APPLICATION = 'wildcats_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mydb',
-        'USER': 'root',
-        'PASSWORD': 'admin',
-        'HOST':'localhost',
-        'PORT':'3306',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST' : env('DB_HOST'),
+        'PORT': env.int('DB_PORT'),
     }
 }
 

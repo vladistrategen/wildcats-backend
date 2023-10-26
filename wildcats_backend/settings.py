@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-mw#9as7t^s)@cgm3s&#%zlip3$1)#$!jp626_aua$&m4co15-!'
 
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
+ALLOWED_HOSTS = ['*']
 
 env = environ.Env()
 env_file = BASE_DIR / '.env'  # Assumes that .env is in the project's base directory

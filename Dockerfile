@@ -15,12 +15,8 @@ RUN apt-get update && apt-get install -y default-mysql-client
 # Copy project
 COPY . /code/
 
-RUN chmod +x init-db.sh
-RUN chmod +x docker-entrypoint.sh
-RUN chmod +x wait-for-it.sh
-
-COPY wait-for-it.sh /code/
-COPY docker-entrypoint.sh /code/
-COPY init-db.sh /code/
+RUN chmod +x /code/init-db.sh
+RUN chmod +x /code/docker-entrypoint.sh
+RUN chmod +x /code/wait-for-it.sh
 
 ENTRYPOINT ["/code/docker-entrypoint.sh"]

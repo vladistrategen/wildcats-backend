@@ -8,5 +8,4 @@ __pycache__
 wildcatsEnv/
 wildCatsEnv/
 env/
-*.env
 .env

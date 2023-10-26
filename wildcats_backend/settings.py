@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-mw#9as7t^s)@cgm3s&#%zlip3$1)#$!jp626_aua$&m4co15-!'
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 
 env = environ.Env()
 env_file = BASE_DIR / '.env'  # Assumes that .env is in the project's base directory
@@ -84,13 +84,14 @@ WSGI_APPLICATION = 'wildcats_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST' : env('DB_HOST'),
-        'PORT': env.int('DB_PORT'),
+        'NAME': env('MYSQL_DATABASE'),
+        'USER': env('MYSQL_USER'),
+        'PASSWORD': env('MYSQL_PASSWORD'),
+        'HOST': 'db',  # This should be the name of your db service in docker-compose
+        'PORT': '3306',
     }
 }
+
 
 
 

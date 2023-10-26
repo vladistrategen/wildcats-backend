@@ -1,32 +1,26 @@
-# Use the official slim Python image as a base image
-FROM python:3.12-slim
+# Use an official Python runtime as a parent image
+FROM python:3.12
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Set the working directory inside the container
-WORKDIR /app
+# Set work directory
+WORKDIR /code
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc default-libmysqlclient-dev pkg-config && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install dependencies
+COPY requirements.txt /code/
+RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y default-mysql-client
+# Copy project
+COPY . /code/
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+RUN chmod +x init-db.sh
+RUN chmod +x docker-entrypoint.sh
+RUN chmod +x wait-for-it.sh
 
-# Install Python dependencies
-RUN python -m pip install --upgrade pip && \
-        pip install -r requirements.txt
+COPY wait-for-it.sh /code/
+COPY docker-entrypoint.sh /code/
+COPY init-db.sh /code/
 
-# Copy the content of the local src directory to the working directory
-COPY . .
-
-# Expose the port the app runs in
-EXPOSE 8000
-
-# Specify the command to run on container start
-ENTRYPOINT ["python", "manage.py"]
-CMD ["runserver", "localhost:8000"]
+ENTRYPOINT ["/code/docker-entrypoint.sh"]

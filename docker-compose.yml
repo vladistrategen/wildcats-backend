@@ -1,40 +1,46 @@
-version: '3.8'
+version: '3'
 
 services:
-  web:
-    build: .
+  db:
+    image: mysql:8.0
+    env_file:
+      - .env
     volumes:
-      - .:/app
+      - ./init-db.sql:/init-db.sql
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"
+    networks:
+      - wildcats-network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 20
+      interval: 10s
+      start_period: 40s
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code
     environment:
-      - DEBUG=${DEBUG}
-      - SECRET_KEY=${SECRET_KEY}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_HOST: db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
-
-  db:
-      image: mysql:5.7
-      volumes:
-        - mysql-data:/var/lib/mysql
-      environment:
-        - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-        - MYSQL_DATABASE=${DB_NAME}
-        - MYSQL_USER=${DB_USER}
-        - MYSQL_PASSWORD=${DB_PASSWORD}
-      ports:
-        - "3307:3306"
-      healthcheck:
-        test: "mysqladmin ping -h localhost -u root --password=$$DB_PASSWORD"
-        interval: 10s
-        timeout: 5s
-        retries: 5
-
+    networks:
+      - wildcats-network
 
 volumes:
-  mysql-data:
+  mysql_data:
+
+networks:
+  wildcats-network:

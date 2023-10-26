@@ -41,7 +41,15 @@ $ git clone https://github.com/vladistrategen/wildcats-backend.git
    - To start the project, navigate to the project's root directory and run:
 
      ```bash
+     $ docker-compose build
+
      $ docker-compose up
+     ```
+
+     - To run the container terminal inside VSCode for live development, open a new Powershell terminal and run:
+
+     ```powershell
+     C:\> docker exec -it wildcats-web-1 /bin/sh
      ```
 
 4. Access the Application:

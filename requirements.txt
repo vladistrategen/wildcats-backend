@@ -8,10 +8,10 @@ django-environ==0.11.2
 django-filter==23.3
 djangorestframework==3.14.0
 filelock==3.12.4
+mysqlclient==2.2.0
 pipenv==2023.10.24
 platformdirs==3.11.0
 pytz==2023.3.post1
-setuptools==68.2.2
 sqlparse==0.4.4
 tzdata==2023.3
 virtualenv==20.24.6

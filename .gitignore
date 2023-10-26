@@ -6,5 +6,7 @@ stf.session.sql
 */migrations/__pycache__
 __pycache__
 wildcatsEnv/
+wildCatsEnv/
 env/
 *.env
+.env

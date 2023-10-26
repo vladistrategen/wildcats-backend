@@ -1,0 +1,4 @@
+wildCatsEnv/
+*.pyc
+__pycache__/
+*.log

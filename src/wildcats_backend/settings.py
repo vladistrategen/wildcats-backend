@@ -39,6 +39,7 @@ DEBUG = env.bool('DEBUG', default=False)
 # Application definition
 
 INSTALLED_APPS = [
+    'wildcats_backend',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -88,12 +89,9 @@ DATABASES = {
         'USER': env('MYSQL_USER'),
         'PASSWORD': env('MYSQL_PASSWORD'),
         'HOST': 'db',  # This should be the name of your db service in docker-compose
-        'PORT': '3306',
+        'PORT': env('MYSQL_PORT'),
     }
 }
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

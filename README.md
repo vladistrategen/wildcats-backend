@@ -38,12 +38,16 @@ $ git clone https://github.com/vladistrategen/wildcats-backend.git
 
    - With Docker installed and the environment variables configured, everything should be automatically set up and configured.
 
-   - To start the project, navigate to the project's root directory and run:
+   - To start the project, navigate to the project's Docker directory by running:
+   ```bash
+   $ cd Docker
+   ```
+   and then execute the following commands:
 
      ```bash
-     $ docker-compose build
+     $ docker compose build
 
-     $ docker-compose up
+     $ docker compose up
      ```
 
      - To run the container terminal inside VSCode for live development, open a new Powershell terminal and run:

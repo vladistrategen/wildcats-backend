@@ -29,15 +29,19 @@ services:
       - "127.0.0.1:8000:8000"
     networks:
       - wildcats-network
+    volumes:
+      - static_files:/app/react_build
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
-      interval: 1m
+      interval: 1m # TO BE CHANGED FOR PRODUCTION
       timeout: 10s
       retries: 3
       start_period: 40s
 
 volumes:
   mysql_data:
+  static_files:
+    external: true
 
 networks:
   wildcats-network:

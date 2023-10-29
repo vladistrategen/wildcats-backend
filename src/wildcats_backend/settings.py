@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 import environ
 
@@ -27,7 +28,7 @@ SECRET_KEY = 'django-insecure-mw#9as7t^s)@cgm3s&#%zlip3$1)#$!jp626_aua$&m4co15-!
 ALLOWED_HOSTS = ['*']
 
 env = environ.Env()
-env_file = BASE_DIR / '.env'  # Assumes that .env is in the project's base directory
+env_file = os.path.join(BASE_DIR,'.env')  # Assumes that .env is in the project's base directory
 env.read_env(env_file)
 
 # reading .env file
@@ -63,7 +64,7 @@ ROOT_URLCONF = 'wildcats_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'react_build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -127,7 +128,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'django_static_files')
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'react_build', 'static'),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

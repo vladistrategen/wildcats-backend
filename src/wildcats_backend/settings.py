@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-mw#9as7t^s)@cgm3s&#%zlip3$1)#$!jp626_aua$&m4co15-!
 ALLOWED_HOSTS = ['*']
 
 env = environ.Env()
-env_file = os.path.join(BASE_DIR,'.env')  # Assumes that .env is in the project's base directory
+env_file = os.path.join(os.path.dirname(BASE_DIR), '.env')
 env.read_env(env_file)
 
 # reading .env file
@@ -40,7 +40,7 @@ DEBUG = env.bool('DEBUG', default=False)
 # Application definition
 
 INSTALLED_APPS = [
-    'wildcats_backend',
+    'healthCheck',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,11 +60,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'wildcats_backend.urls'
+STATIC_URL = 'static/'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'react_build')],
+        'DIRS': [os.path.join(os.path.dirname(BASE_DIR), STATIC_URL, 'react_build/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -128,11 +129,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'django_static_files')
-STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), STATIC_URL, 'django_static_files')
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'react_build', 'static'),
+    os.path.join(os.path.dirname(BASE_DIR), STATIC_URL, 'react_build/static'),
 ]
 
 # Default primary key field type

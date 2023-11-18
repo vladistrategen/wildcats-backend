@@ -40,6 +40,9 @@ DEBUG = env.bool('DEBUG', default=False)
 # Application definition
 
 INSTALLED_APPS = [
+    'Country',
+    'City',
+    'CostOfLivingData',
     'health_check',
     'django.contrib.admin',
     'django.contrib.auth',

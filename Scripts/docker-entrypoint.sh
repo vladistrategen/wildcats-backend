@@ -1,14 +1,17 @@
 #!/bin/bash
-set -e
+
 echo "Starting entrypoint.sh"
+
+set -e
 # Wait for MySQL to be ready
 /app/Scripts/wait-for-it.sh db:3306 --timeout=30
 
 #django health check
 python manage.py check_health
 
-# Apply migrations
 python manage.py makemigrations
+
+# Apply migrations
 python manage.py migrate
 
 # Collect static files

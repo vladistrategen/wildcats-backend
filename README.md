@@ -38,6 +38,11 @@ $ git clone https://github.com/vladistrategen/wildcats-backend.git
 
    - With Docker installed and the environment variables configured, everything should be automatically set up and configured.
 
+   - Now create the external volume for static file sharing with the react frontend contianer:
+   ```bash
+   $ docker volume create static_files
+   ```
+
    - To start the project, navigate to the project's Docker directory by running:
    ```bash
    $ cd Docker

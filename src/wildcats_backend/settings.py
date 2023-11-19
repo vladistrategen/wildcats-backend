@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'Country',
     'City',
     'CostOfLivingData',
+    'rest_framework',
     'health_check',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -50,6 +51,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
+    'corsheaders',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -68,7 +72,7 @@ STATIC_URL = 'static/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(os.path.dirname(BASE_DIR), STATIC_URL, 'react_build/')],
+        'DIRS': [os.path.join(os.path.dirname(BASE_DIR), STATIC_URL, 'react_build/'), os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -142,3 +146,5 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_ALL_ORIGINS = True

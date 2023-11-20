@@ -53,8 +53,9 @@ class CountryDetail(APIView):
         return Response(serializer.data)
 
 class CostOfLivingOfCityList(APIView):
-    def get(self, request, city, format=None):
-        costOfLivingData = CostOfLivingData.objects.filter(city__name=city)
+    def get(self, request, pk, format=None):
+        costOfLivingData = CostOfLivingData.objects.filter(city = pk)
+        #costOfLivingData = CostOfLivingData.objects.filter(city__name=city)
         serializer = CostOfLivingDataSerializer(costOfLivingData, many=True)
         return Response(serializer.data)
 
@@ -64,7 +65,7 @@ class CostOfLivingList(APIView):
         serializer = CostOfLivingDataSerializer(costOfLivingData, many=True)
         return Response(serializer.data)
 
-class CostOfLivingOfCityDetail(APIView):
+class CostOfLivingDetail(APIView):
     def get_object(self, pk):
         try:
             return CostOfLivingData.objects.get(pk=pk)

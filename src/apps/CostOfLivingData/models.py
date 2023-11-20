@@ -1,5 +1,5 @@
 from django.db import models
-from City.models import City
+from apps.City.models import City
 
 # Create your models here.
 

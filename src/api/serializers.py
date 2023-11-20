@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer
-from City.models import City
-from Country.models import Country
-from CostOfLivingData.models import CostOfLivingData
+from apps.City.models import City
+from apps.Country.models import Country
+from apps.CostOfLivingData.models import CostOfLivingData
 
 class CitySerializer(ModelSerializer):
     class Meta:

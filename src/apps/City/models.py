@@ -1,5 +1,5 @@
 from django.db import models
-from Country.models import Country
+from apps.Country.models import Country
 
 # Create your models here.
 class City(models.Model):

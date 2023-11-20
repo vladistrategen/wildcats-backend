@@ -1,7 +1,7 @@
 from django.db import models
 from Country.models import Country
 
-# Create your models here.
+# Create your models here. HAHAH
 class City(models.Model):
     name = models.CharField(max_length=100)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)

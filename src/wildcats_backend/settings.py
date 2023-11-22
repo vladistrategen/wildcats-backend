@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'apps.City',
     'apps.Country',
     'apps.CostOfLivingData',
+    'apps.FlightData',
+    'apps.HotelData',
     'rest_framework',
     'health_check',
     'django.contrib.admin',

@@ -40,6 +40,7 @@ DEBUG = env.bool('DEBUG', default=False)
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts',
     'apps.City',
     'apps.Country',
     'apps.CostOfLivingData',

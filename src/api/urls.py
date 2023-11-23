@@ -3,7 +3,7 @@ from .views import (
     CityList, CitiesOfCountry, CityDetail, 
     CountryList, CountryDetail, 
     CostOfLivingOfCityList, CostOfLivingDetail,
-    CostOfLivingList
+    CostOfLivingList, SearchFlights
 )
 
 urlpatterns = [
@@ -15,4 +15,5 @@ urlpatterns = [
     path('cost-of-living/', CostOfLivingList.as_view(), name='cost-of-living-list'),
     path('cost-of-living/city/<int:pk>/', CostOfLivingOfCityList.as_view(), name='cost-of-living-city-list'),
     path('cost-of-living/<int:pk>/', CostOfLivingDetail.as_view(), name='cost-of-living-detail'),
+    path('search/flights', SearchFlights.as_view(), name='search'),
 ]

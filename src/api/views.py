@@ -8,7 +8,7 @@ from apps.City.models import City
 from apps.Country.models import Country
 from apps.CostOfLivingData.models import CostOfLivingData
 
-from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer
+from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer
 
 class CityList(APIView):
     def get(self, request, format=None):
@@ -98,3 +98,23 @@ class CostOfLivingDetail(APIView):
         return Response(serializer.errors)
     
 
+class SearchAccomodations(APIView):
+    def get(self, request, city, format=None):
+        pass
+
+class SearchFlights(APIView):
+    def post(self, request):
+        # Get data from the request body
+        data = request.data
+
+        # Initialize the serializer with the request data
+        serializer = SearchTravelDataQuerySerializer(data=data)
+
+        # Validate the data
+        if serializer.is_valid():
+            # Access the validated data
+            valid_data = serializer.validated_data
+            # Process the valid_data as required
+            return Response(valid_data)
+        else:
+            return Response(serializer.errors, status=400)

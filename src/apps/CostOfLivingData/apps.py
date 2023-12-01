@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class CityConfig(AppConfig):
+class CostoflivingdataConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'City'
+    name = 'apps.CostOfLivingData'

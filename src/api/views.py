@@ -4,11 +4,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework import status
-from City.models import City
-from Country.models import Country
-from CostOfLivingData.models import CostOfLivingData
+from apps.City.models import City
+from apps.Country.models import Country
+from apps.CostOfLivingData.models import CostOfLivingData
 
-from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer
+from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer
 
 class CityList(APIView):
     def get(self, request, format=None):
@@ -53,8 +53,9 @@ class CountryDetail(APIView):
         return Response(serializer.data)
 
 class CostOfLivingOfCityList(APIView):
-    def get(self, request, city, format=None):
-        costOfLivingData = CostOfLivingData.objects.filter(city__name=city)
+    def get(self, request, pk, format=None):
+        costOfLivingData = CostOfLivingData.objects.filter(city = pk)
+        #costOfLivingData = CostOfLivingData.objects.filter(city__name=city)
         serializer = CostOfLivingDataSerializer(costOfLivingData, many=True)
         return Response(serializer.data)
 
@@ -64,7 +65,7 @@ class CostOfLivingList(APIView):
         serializer = CostOfLivingDataSerializer(costOfLivingData, many=True)
         return Response(serializer.data)
 
-class CostOfLivingOfCityDetail(APIView):
+class CostOfLivingDetail(APIView):
     def get_object(self, pk):
         try:
             return CostOfLivingData.objects.get(pk=pk)
@@ -97,3 +98,23 @@ class CostOfLivingOfCityDetail(APIView):
         return Response(serializer.errors)
     
 
+class SearchAccomodations(APIView):
+    def get(self, request, city, format=None):
+        pass
+
+class SearchFlights(APIView):
+    def post(self, request):
+        # Get data from the request body
+        data = request.data
+
+        # Initialize the serializer with the request data
+        serializer = SearchTravelDataQuerySerializer(data=data)
+
+        # Validate the data
+        if serializer.is_valid():
+            # Access the validated data
+            valid_data = serializer.validated_data
+            # Process the valid_data as required
+            return Response(valid_data)
+        else:
+            return Response(serializer.errors, status=400)

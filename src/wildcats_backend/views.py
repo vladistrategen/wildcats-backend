@@ -10,3 +10,9 @@ def index(request):
         return render(request, 'index.html')
     except TemplateDoesNotExist :
         return render(request, 'main_index_not_fount.html')
+    
+def login(request):
+    try:
+        return render(request, 'accounts/login.html')
+    except TemplateDoesNotExist :
+        return render(request, 'main_index_not_fount.html')

@@ -7,8 +7,10 @@ from rest_framework import status
 from apps.City.models import City
 from apps.Country.models import Country
 from apps.CostOfLivingData.models import CostOfLivingData
+from apps.FlightData.models import FlightData
+from apps.HotelData.models import HotelData
 
-from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer
+from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer, FlightDataSerializer, HotelDataSerializer
 
 class CityList(APIView):
     def get(self, request, format=None):
@@ -118,3 +120,51 @@ class SearchFlights(APIView):
             return Response(valid_data)
         else:
             return Response(serializer.errors, status=400)
+      
+class FlightList(APIView):
+    def get(self, request, format=None):
+        flights = FlightData.objects.all()
+        serializer = FlightDataSerializer(flights, many=True)
+        return Response(serializer.data)
+    
+class FlightDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return FlightData.objects.get(pk=pk)
+        except FlightData.DoesNotExist:
+            raise Http404
+        
+    def get(self, request, pk, format=None):
+        flights = FlightData.objects.filter(pk=pk)
+        serializer = FlightDataSerializer(flights, many=True)
+        return Response(serializer.data)
+    
+class FlightByOrigin(APIView):
+    def get(self, request, origin, format=None):
+        flights = FlightData.objects.filter(origin=origin)
+        serializer = FlightDataSerializer(flights, many=True)
+        return Response(serializer.data)
+
+class FlightByDestination(APIView):
+    def get(self, request, destination, format=None):
+        flights = FlightData.objects.filter(destination=destination)
+        serializer = FlightDataSerializer(flights, many=True)
+        return Response(serializer.data)
+
+class HotelList(APIView):
+    def get(self, request, format=None):
+        hotels = HotelData.objects.all()
+        serializer = HotelDataSerializer(hotels, many=True)
+        return Response(serializer.data)
+
+class HotelDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return HotelData.objects.get(pk=pk)
+        except HotelData.DoesNotExist:
+            raise Http404
+        
+    def get(self, request, pk, format=None):
+        hotels = HotelData.objects.filter(pk=pk)
+        serializer = HotelDataSerializer(hotels, many=True)
+        return Response(serializer.data)

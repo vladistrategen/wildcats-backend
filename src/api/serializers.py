@@ -2,6 +2,8 @@ from rest_framework import serializers
 from apps.City.models import City
 from apps.Country.models import Country
 from apps.CostOfLivingData.models import CostOfLivingData
+from apps.FlightData.models import FlightData
+from apps.HotelData.models import HotelData
 
 class CitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,6 +18,16 @@ class CountrySerializer(serializers.ModelSerializer):
 class CostOfLivingDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = CostOfLivingData
+        fields = '__all__'
+    
+class FlightDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FlightData
+        fields = '__all__'
+        
+class HotelDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HotelData
         fields = '__all__'
 
 class SearchTravelDataQuerySerializer(serializers.Serializer):

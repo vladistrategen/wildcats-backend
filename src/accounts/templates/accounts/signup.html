@@ -8,41 +8,35 @@
     <link rel="stylesheet" href="{% static 'accounts/styles.css' %}">
 </head>
 <body>
-    <div class="register-container">
-        <form method="post" class="register-form">
+    <div class="login-container">
+        <h2>Register to Urban Wanderlust</h2>
+        <form method="post" class="login-form">
             {% csrf_token %}
-            <h2>Register to Urban Wanderlust</h2>
-    
-        <form action="/signup" method="post">
-            {% csrf_token %}    <!-- din django, pt protectie anti atacuri pe web, verifica requesturile -->
-            <label for="">Username</label>
-            <input type="text" id="username" name="username" placeholder="Create a username (only letters and numbers)" Required>
-            <br>
-
-            <label for="">First name</label>
-            <input type="text" id="f_name" name="f_name" placeholder="Enter your first name" Required>
-            <br>
-
-            <label for="">Last name</label>
-            <input type="text" id="l_name" name="l_name" placeholder="Enter your last name" Required>
-            <br>
-
-            <label for="">Email adress</label>
-            <input type="email" id="email" name="email" placeholder="Enter your email adress" Required>
-            <br>
-
-            <label for="">Password</label>
-            <input type="password" id="pass_1" name="pass_1" placeholder="Create a password" Required>
-            <br>
-
-            <label for="">Confirm password</label>
-            <input type="password" id="pass_2" name="pass_2" placeholder="Confirm your password" Required>
-            <br>
-
-            <button type="submit">Sign Up</button>
-
-            <!--Required il obliga pe user sa introduca date in acel camp inainte de a da submit formularului, altfer => validation error -->
-
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label for="id_first_name">First name</label>
+                {{ form.first_name }}
+            </div>
+            <div class="form-group">
+                <label for="id_last_name">Last name</label>
+                {{ form.last_name }}
+            </div>
+            <div class="form-group">
+                <label for="id_email">Email address</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="id_password1">Password</label>
+                {{ form.password1 }}
+            </div>
+            <div class="form-group">
+                <label for="id_password2">Confirm password</label>
+                {{ form.password2 }}
+            </div>
+            <button class="login-button" type="submit">Sign Up</button>
         </form>
     </div>
 </body>

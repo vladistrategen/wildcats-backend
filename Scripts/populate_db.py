@@ -40,15 +40,29 @@ def main():
 
         # Insert cities and cost of living data
         cities = [
-            ('Berlin', 1), ('Munich', 1), ('Frankfurt', 1),
-            ('Paris', 2), ('Lyon', 2), ('Marseille', 2),
-            ('Rome', 3), ('Milan', 3), ('Naples', 3),
-            ('Madrid', 4), ('Barcelona', 4), ('Valencia', 4),
-            ('Bucharest', 5), ('Cluj-Napoca', 5), ('Timișoara', 5)
+            ('Berlin', 1, 'TXL'),     # Berlin Tegel Airport (Note: TXL is now closed, BER is the new one)
+            ('Munich', 1, 'MUC'),     # Munich Airport
+            ('Frankfurt', 1, 'FRA'),  # Frankfurt Airport
+
+            ('Paris', 2, 'CDG'),      # Charles de Gaulle Airport
+            ('Lyon', 2, 'LYS'),       # Lyon–Saint-Exupéry Airport
+            ('Marseille', 2, 'MRS'),  # Marseille Provence Airport
+
+            ('Rome', 3, 'FCO'),       # Leonardo da Vinci–Fiumicino Airport
+            ('Milan', 3, 'MXP'),      # Milan Malpensa Airport
+            ('Naples', 3, 'NAP'),     # Naples International Airport
+
+            ('Madrid', 4, 'MAD'),     # Adolfo Suárez Madrid–Barajas Airport
+            ('Barcelona', 4, 'BCN'),  # Josep Tarradellas Barcelona-El Prat Airport
+            ('Valencia', 4, 'VLC'),   # Valencia Airport
+
+            ('Bucharest', 5, 'OTP'),  # Henri Coandă International Airport
+            ('Cluj-Napoca', 5, 'CLJ'),# Avram Iancu Cluj International Airport
+            ('Timișoara', 5, 'TSR')   # Timișoara Traian Vuia International Airport
         ]
 
-        for city, country_id in cities:
-            cursor.execute("INSERT INTO City_city (name, country_id, latitude, longitude) VALUES (%s, %s, %s, %s)", (city, country_id, 0, 0))
+        for city, country_id, main_iata_code in cities:
+            cursor.execute("INSERT INTO City_city (name, country_id, latitude, longitude, main_iata_code) VALUES (%s, %s, %s, %s, %s)", (city, country_id, 0, 0, main_iata_code))
 
         cnx.commit()
 

@@ -1,3 +1,6 @@
+import requests
+import environ
+from pathlib import Path
 from django.http import Http404
 from django.shortcuts import redirect, render
 from rest_framework.response import Response
@@ -9,8 +12,16 @@ from apps.Country.models import Country
 from apps.CostOfLivingData.models import CostOfLivingData
 from apps.FlightData.models import FlightData
 from apps.HotelData.models import HotelData
-
 from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer, FlightDataSerializer, HotelDataSerializer
+
+ENV_PATH = Path(__file__).resolve().parent.parent / '.env'
+env = environ.Env()
+env.read_env(ENV_PATH)
+TRAVELPAYOUTS_API_KEY = env('TRAVELPAYOUTS_API_KEY')
+RAPID_API_KEY = env('RAPID_API_KEY')
+RAPID_API_HOST = env('RAPID_API_HOST')
+TRAVELPAYOUTS_API_URL = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
+
 
 class CityList(APIView):
     def get(self, request, format=None):
@@ -114,10 +125,20 @@ class SearchFlights(APIView):
 
         # Validate the data
         if serializer.is_valid():
-            # Access the validated data
-            valid_data = serializer.validated_data
-            # Process the valid_data as required
-            return Response(valid_data)
+            HEADERS = {
+                'X-Access-Token': TRAVELPAYOUTS_API_KEY,
+                'X-RapidAPI-Key': RAPID_API_KEY,
+                'X-RapidAPI-Host': RAPID_API_HOST,
+                'Content-Type': 'application/json'
+            }
+
+            query ={
+                "currency": "usd",
+                "destination": City.objects.get(pk = serializer.data['to_id']).main_iata_code,
+                "origin": City.objects.get(pk = serializer.data['from_id']).main_iata_code,
+            }
+            response = requests.request("GET", TRAVELPAYOUTS_API_URL, headers=HEADERS, params=query)
+            return Response(response.json())
         else:
             return Response(serializer.errors, status=400)
       

@@ -1,5 +1,6 @@
 asgiref==3.7.2
 certifi==2023.7.22
+charset-normalizer==3.3.2
 distlib==0.3.7
 Django==4.2.6
 django-cors-headers==4.3.0
@@ -9,13 +10,16 @@ django-filter==23.3
 djangorestframework==3.14.0
 filelock==3.12.4
 mysql-connector-python==8.2.0
+idna==3.6
 mysqlclient==2.2.0
 pipenv==2023.10.24
 platformdirs==3.11.0
 protobuf==4.21.12
 pytz==2023.3.post1
+requests==2.31.0
 setuptools==68.2.2
 sqlparse==0.4.4
 tzdata==2023.3
+urllib3==2.1.0
 virtualenv==20.24.6
 wheel==0.41.3

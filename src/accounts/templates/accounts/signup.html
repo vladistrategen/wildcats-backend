@@ -9,9 +9,9 @@
 </head>
 <body>
     <div class="login-container">
-        <h2>Register to Urban Wanderlust</h2>
         <form method="post" class="login-form">
-            {% csrf_token %}
+           {% csrf_token %}
+            <h2>Register to Urban Wanderlust</h2>
             <div class="form-group">
                 <label for="id_username">Username</label>
                 {{ form.username }}

@@ -33,3 +33,22 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+
+
+class PaymentForm(forms.Form):
+    card_number = forms.CharField(widget=forms.TextInput(attrs={
+        'placeholder': 'Enter your card number',
+        'required': 'True'
+    }))
+    expiration_date = forms.CharField(widget=forms.TextInput(attrs={
+        'placeholder': 'Enter expiration date (MM/YY)',
+        'required': 'True'
+    }))
+    security_code = forms.CharField(widget=forms.TextInput(attrs={
+        'placeholder': 'Enter security code',
+        'required': 'True'
+    }))
+    
+    class Meta:
+        fields = ('card_number', 'expiration_date', 'security_code')
+

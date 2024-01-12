@@ -10,7 +10,7 @@
 <body>
     <div class="login-container">
         <form method="post" class="login-form">
-            {% csrf_token %}
+            {% csrf_token %} 
             <h2>Login to Urban Wanderlust</h2>
     
             <div class="form-group">
@@ -26,7 +26,7 @@
             <button type="submit" class="login-button">Login</button>
     
             <a href="{% url 'password_reset' %}">Forgot password?</a>
-            <a >Sign up</a>
+            <a href ="{% url 'signup' %}" >Sign up</a>
         </form>
     </div>
 </body>

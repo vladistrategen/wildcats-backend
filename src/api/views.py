@@ -30,8 +30,8 @@ class CityList(APIView):
         return Response(serializer.data)
 
 class CitiesOfCountry(APIView):
-    def get(self, request, country, format=None):
-        cities = City.objects.filter(country=country)
+    def get(self, request, pk, format=None):
+        cities = City.objects.filter(country_id=pk)
         serializer = CitySerializer(cities, many=True)
         return Response(serializer.data)
 

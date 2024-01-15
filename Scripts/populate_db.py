@@ -1,5 +1,8 @@
+import json
 import logging
 import os
+
+import requests
 import mysql.connector
 import random
 import environ
@@ -8,6 +11,8 @@ env = environ.Env()
 env_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 env.read_env(env_file_path)
 
+COUNTRIES_BASE_URL = 'https://restcountries.com/v3.1/all'
+CITIES_BASE_URL = 'https://api.travelpayouts.com/data/ru/cities.json'
 # Database configuration
 
 config = {
@@ -17,6 +22,38 @@ config = {
     'port': env('MYSQL_PORT'),
     'database': env('MYSQL_DATABASE')
 }
+
+def getCountries():
+    countries = requests.get(COUNTRIES_BASE_URL).json()
+    formatted_countries = []
+
+    # First, load all cities from cities.json
+    with open('/app/Scripts/cities.json', 'r', encoding='utf-8') as file:
+        cities = json.load(file)
+
+    if countries:
+        for country in countries:
+            if country['region'] == 'Europe':
+                # Filter cities for the current country
+                country_cities = [
+                    {
+                        'name': city['name'],
+                        'code': city['code'],
+                        'latitude': city['latitude'],
+                        'longitude': city['longitude']
+                    }
+                    for city in cities
+                    if city['country_code'] == country['cca2']
+                ]
+                formatted_country = {
+                    'name': country['name']['common'],
+                    'code': country['cca3'],
+                    'cities': country_cities
+                }
+                formatted_countries.append(formatted_country)
+
+    return formatted_countries
+
 
 def main():
     # Connect to the database
@@ -32,37 +69,24 @@ def main():
     # Insert countries, cities, and cost of living data if tables are empty
     if is_table_empty('Country_country') and is_table_empty('City_city') and is_table_empty('CostOfLivingData_costoflivingdata'):
         # Insert countries
-        countries = [('Germany', 'DEU'), ('France', 'FRA'), ('Italy', 'ITA'), ('Spain', 'ESP'), ('Romania', 'ROU')]
-        for country_name, country_code in countries:
+        countries = getCountries()
+        current_country_id = 0
+        no_cities = 0
+        for country in countries:
+            country_name = country["name"]
+            country_code = country["code"]
             cursor.execute("INSERT INTO Country_country (name, code) VALUES (%s, %s)", (country_name, country_code))
-
-        cnx.commit()
-
-        # Insert cities and cost of living data
-        cities = [
-            ('Berlin', 1, 'TXL'),     # Berlin Tegel Airport (Note: TXL is now closed, BER is the new one)
-            ('Munich', 1, 'MUC'),     # Munich Airport
-            ('Frankfurt', 1, 'FRA'),  # Frankfurt Airport
-
-            ('Paris', 2, 'CDG'),      # Charles de Gaulle Airport
-            ('Lyon', 2, 'LYS'),       # Lyon–Saint-Exupéry Airport
-            ('Marseille', 2, 'MRS'),  # Marseille Provence Airport
-
-            ('Rome', 3, 'FCO'),       # Leonardo da Vinci–Fiumicino Airport
-            ('Milan', 3, 'MXP'),      # Milan Malpensa Airport
-            ('Naples', 3, 'NAP'),     # Naples International Airport
-
-            ('Madrid', 4, 'MAD'),     # Adolfo Suárez Madrid–Barajas Airport
-            ('Barcelona', 4, 'BCN'),  # Josep Tarradellas Barcelona-El Prat Airport
-            ('Valencia', 4, 'VLC'),   # Valencia Airport
-
-            ('Bucharest', 5, 'OTP'),  # Henri Coandă International Airport
-            ('Cluj-Napoca', 5, 'CLJ'),# Avram Iancu Cluj International Airport
-            ('Timișoara', 5, 'TSR')   # Timișoara Traian Vuia International Airport
-        ]
-
-        for city, country_id, main_iata_code in cities:
-            cursor.execute("INSERT INTO City_city (name, country_id, latitude, longitude, main_iata_code) VALUES (%s, %s, %s, %s, %s)", (city, country_id, 0, 0, main_iata_code))
+            current_country_id += 1
+            for city in country["cities"]:
+                city_name = city["name"]
+                city_code = city["code"]
+                city_latitude = city["latitude"]
+                city_longitude = city["longitude"]
+                try:
+                    cursor.execute("INSERT INTO City_city (name, country_id, latitude, longitude, main_iata_code) VALUES (%s, %s, %s, %s, %s)", (city_name, current_country_id, city_latitude, city_longitude, city_code))
+                except mysql.connector.errors.IntegrityError as e:
+                    logging.error(f"Error inserting data: {e}")
+                no_cities += 1
 
         cnx.commit()
 

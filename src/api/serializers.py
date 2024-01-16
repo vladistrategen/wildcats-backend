@@ -4,6 +4,8 @@ from apps.Country.models import Country
 from apps.CostOfLivingData.models import CostOfLivingData
 from apps.FlightData.models import FlightData
 from apps.HotelData.models import HotelData
+from django.contrib.auth.models import User, Group
+from accounts.models import UserProfile
 
 class CitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,3 +41,19 @@ class SearchTravelDataQuerySerializer(serializers.Serializer):
     directOnly = serializers.BooleanField(required=True)
     maxStops = serializers.IntegerField(required=False)
     
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['is_premium']
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(read_only=True)
+    groups = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='name'
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'profile', 'groups' ]

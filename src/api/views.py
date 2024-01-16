@@ -1,7 +1,7 @@
 import requests
 import environ
 from pathlib import Path
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,7 +12,8 @@ from apps.Country.models import Country
 from apps.CostOfLivingData.models import CostOfLivingData
 from apps.FlightData.models import FlightData
 from apps.HotelData.models import HotelData
-from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer, FlightDataSerializer, HotelDataSerializer
+from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer, FlightDataSerializer, HotelDataSerializer, UserSerializer
+from django.contrib.auth.decorators import login_required
 
 ENV_PATH = Path(__file__).resolve().parent.parent / '.env'
 env = environ.Env()
@@ -189,3 +190,15 @@ class HotelDetail(APIView):
         hotels = HotelData.objects.filter(pk=pk)
         serializer = HotelDataSerializer(hotels, many=True)
         return Response(serializer.data)
+    
+def user_data(request):
+    """
+    View to return user data if authenticated, else return an
+    'unauthenticated' response.
+    """
+    if request.user.is_authenticated:
+        user = request.user
+        serializer = UserSerializer(user)
+        return JsonResponse({'isAuthenticated': True, 'user': serializer.data})
+    else:
+        return JsonResponse({'isAuthenticated': False, 'user': None}, status=401)

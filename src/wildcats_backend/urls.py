@@ -29,5 +29,4 @@ urlpatterns = [
     path('login/', login_view, name="login"),
     path('payment/', payment_view, name="payment"),
     path("accounts/", include("django.contrib.auth.urls")),
-    
 ]

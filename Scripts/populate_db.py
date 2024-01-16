@@ -47,7 +47,7 @@ def getCountries():
                 ]
                 formatted_country = {
                     'name': country['name']['common'],
-                    'code': country['cca3'],
+                    'code': country['cca2'],
                     'cities': country_cities
                 }
                 formatted_countries.append(formatted_country)
@@ -103,7 +103,7 @@ def main():
                 try:
                     cursor.execute("INSERT INTO CostOfLivingData_costoflivingdata (city_id, item, price, date) VALUES (%s, %s, %s, %s)", (city_id, item, price, '2023-01-01'))
                 except mysql.connector.errors.IntegrityError as e:
-                    logging.error(f"Error inserting data: {e}")
+                    pass # ignore duplicate entries
 
         cnx.commit()
 

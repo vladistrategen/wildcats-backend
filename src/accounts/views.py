@@ -34,7 +34,7 @@ def login_view(request):
         if user is not None:
             login(request, user)
             # Redirect to a success page, e.g., home page
-            return redirect('home')  # Replace 'home' with the name of your home URL
+            return redirect('/')  # Replace 'home' with the name of your home URL
         else:
             messages.error(request, 'Invalid username or password.')
 

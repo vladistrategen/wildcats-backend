@@ -123,20 +123,17 @@ class SearchFlights(APIView):
 
         # Initialize the serializer with the request data
         serializer = SearchTravelDataQuerySerializer(data=data)
-
+        print(serializer.is_valid())
         # Validate the data
         if serializer.is_valid():
             HEADERS = {
                 'X-Access-Token': TRAVELPAYOUTS_API_KEY,
-                'X-RapidAPI-Key': RAPID_API_KEY,
-                'X-RapidAPI-Host': RAPID_API_HOST,
                 'Content-Type': 'application/json'
             }
-
             query ={
-                "currency": "usd",
-                "destination": City.objects.get(pk = serializer.data['to_id']).main_iata_code,
-                "origin": City.objects.get(pk = serializer.data['from_id']).main_iata_code,
+                "currency": "eur",
+                "destination": serializer.data['to_iata'],
+                "origin": serializer.data['from_iata'],
             }
             response = requests.request("GET", TRAVELPAYOUTS_API_URL, headers=HEADERS, params=query)
             return Response(response.json())

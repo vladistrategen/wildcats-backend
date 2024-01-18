@@ -33,12 +33,13 @@ class HotelDataSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SearchTravelDataQuerySerializer(serializers.Serializer):
-    to_id = serializers.IntegerField(required=True)
-    from_id = serializers.IntegerField(required=True)
+    to_iata = serializers.CharField(max_length=4, required=True)
+    from_iata = serializers.CharField(max_length=4, required=True)
+    adults = serializers.IntegerField(required=True)
     startDate = serializers.DateField(required=True)
     endDate = serializers.DateField(required=False)
     maxPrice = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
-    directOnly = serializers.BooleanField(required=True)
+    directOnly = serializers.BooleanField(required=False)
     maxStops = serializers.IntegerField(required=False)
     
 class UserProfileSerializer(serializers.ModelSerializer):

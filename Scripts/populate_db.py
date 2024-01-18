@@ -48,7 +48,8 @@ def getCountries():
                 formatted_country = {
                     'name': country['name']['common'],
                     'code': country['cca2'],
-                    'cities': country_cities
+                    'cities': country_cities,
+                    'timezone': country['timezones'][0] if country['timezones'] else ''
                 }
                 formatted_countries.append(formatted_country)
 
@@ -75,7 +76,8 @@ def main():
         for country in countries:
             country_name = country["name"]
             country_code = country["code"]
-            cursor.execute("INSERT INTO Country_country (name, code) VALUES (%s, %s)", (country_name, country_code))
+            timezone = country["timezone"]
+            cursor.execute("INSERT INTO Country_country (name, code, timezone) VALUES (%s, %s, %s)", (country_name, country_code, timezone))
             current_country_id += 1
             for city in country["cities"]:
                 city_name = city["name"]

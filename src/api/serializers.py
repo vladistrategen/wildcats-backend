@@ -58,3 +58,16 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'profile', 'groups' ]
+
+class SearchHotelDataQuerySerializer(serializers.Serializer):
+    city_iata = serializers.CharField(max_length=4, required=True)
+    arrival_date = serializers.DateField(required=True)
+    departure_date = serializers.DateField(required=True)
+    adults = serializers.IntegerField(required=False)
+    
+class SearchHotelDetailSerializer(serializers.Serializer):
+    hotel_id = serializers.IntegerField(required=True)
+    arrival_date = serializers.DateField(required=True)
+    departure_date = serializers.DateField(required=True)
+    adults = serializers.IntegerField(required=False)
+    

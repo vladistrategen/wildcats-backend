@@ -1,5 +1,9 @@
 import requests
+import hashlib
+import time
+import socket
 import environ
+import json
 from pathlib import Path
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
@@ -12,16 +16,20 @@ from apps.Country.models import Country
 from apps.CostOfLivingData.models import CostOfLivingData
 from apps.FlightData.models import FlightData
 from apps.HotelData.models import HotelData
-from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer, FlightDataSerializer, HotelDataSerializer, UserSerializer
 from django.contrib.auth.decorators import login_required
+from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer, FlightDataSerializer, HotelDataSerializer, UserSerializer, SearchHotelDetailSerializer, SearchHotelDataQuerySerializer
 
 ENV_PATH = Path(__file__).resolve().parent.parent / '.env'
 env = environ.Env()
 env.read_env(ENV_PATH)
 TRAVELPAYOUTS_API_KEY = env('TRAVELPAYOUTS_API_KEY')
+TRAVELPAYOUTS_API_MARKER = env("TRAVELPAYOUTS_API_MARKER")
 RAPID_API_KEY = env('RAPID_API_KEY')
 RAPID_API_HOST = env('RAPID_API_HOST')
-TRAVELPAYOUTS_API_URL = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
+SEARCH_FLIGHTS_API_URL = "http://api.travelpayouts.com/v1/flight_search/"
+SEARCH_FLIGHTS_DETAILS_API_URL = "http://api.travelpayouts.com/v1/flight_search_results"
+SEARCH_HOTELS_API_URL = "https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotels"
+SEARCH_HOTELDETAIL_API_URL = "https://booking-com15.p.rapidapi.com/api/v1/hotels/getHotelDetails"
 
 
 class CityList(APIView):
@@ -117,26 +125,102 @@ class SearchAccomodations(APIView):
         pass
 
 class SearchFlights(APIView):
-    def post(self, request):
-        # Get data from the request body
-        data = request.data
+    
+    def create_signature(self, currency_code, host, locale, adults, date, destination, origin, trip_class, ip):
+        return hashlib.md5(f'{TRAVELPAYOUTS_API_KEY}:{currency_code}:{host}:{locale}:{TRAVELPAYOUTS_API_MARKER}:{adults}:0:0:{date}:{destination}:{origin}:{trip_class}:{ip}'.encode('utf-8')).hexdigest()
 
-        # Initialize the serializer with the request data
-        serializer = SearchTravelDataQuerySerializer(data=data)
-        print(serializer.is_valid())
-        # Validate the data
+    def get_search_id(self, data):
+        ip = socket.gethostbyname(socket.gethostname())
+        print(ip)
+        currency_code = "EUR"
+        host = 'wildcats'
+        locale = 'en'
+        adults = data["adults"]
+        date = data["startDate"]
+        destination = data["to_iata"]
+        origin = data["from_iata"]
+        trip_class = 'Y'
+        signature = self.create_signature(currency_code, host, locale, adults, date, destination, origin, trip_class, ip)
+        print(signature)
+        HEADERS = {
+            'Content-Type': 'application/json',
+        }
+
+
+        BODY = {
+            'signature': signature,
+            'marker': TRAVELPAYOUTS_API_MARKER,
+            "currency_code" : currency_code,
+            'host': host,
+            'user_ip': ip,
+            'locale': locale,
+            'trip_class': trip_class,
+            'passengers': {
+                'adults': adults,
+                'infants': 0,
+                'children': 0
+            },
+            'segments': [{
+                'origin': origin,
+                'destination': destination,
+                'date': date
+            }],
+
+        }
+
+        try:
+            response = requests.post(SEARCH_FLIGHTS_API_URL, headers=HEADERS, data=json.dumps(BODY))
+            response.raise_for_status()  # Raise an exception for non-200 status codes
+
+            # Try to parse JSON
+            data = response.json()
+            return data.get('search_id')
+            
+        
+        except requests.exceptions.RequestException as e:
+            print("Request error:", e)
+
+        except json.decoder.JSONDecodeError as e:
+            print("JSON decode error:", e)
+            
+    def post(self, request):
+        serializer = SearchTravelDataQuerySerializer(data=request.data)
+        
         if serializer.is_valid():
+            
+            search_id = self.get_search_id(serializer.data)
+
             HEADERS = {
-                'X-Access-Token': TRAVELPAYOUTS_API_KEY,
-                'Content-Type': 'application/json'
+                'Accept-Encoding': 'gzip,deflate,sdch'
             }
-            query ={
-                "currency": "eur",
-                "destination": serializer.data['to_iata'],
-                "origin": serializer.data['from_iata'],
+
+            params = {
+                'uuid': search_id
             }
-            response = requests.request("GET", TRAVELPAYOUTS_API_URL, headers=HEADERS, params=query)
-            return Response(response.json())
+
+            MAX_RETRIES = 5  # Set a maximum number of retries to avoid infinite loop
+            retries = 0
+
+            while retries < MAX_RETRIES:
+                try:
+                    response = requests.get(SEARCH_FLIGHTS_DETAILS_API_URL, headers=HEADERS, params=params)
+                    response.raise_for_status()
+
+                    data = response.json()
+
+                    # Check if any item has an empty 'proposals' array
+                    if all(len(item.get('proposals', [])) > 0 for item in data):
+                        return Response(data)
+                    else:
+                        retries += 1
+
+                except requests.exceptions.RequestException as e:
+                    print("Request error:", e)
+                    return Response({'error': str(e)}, status=500)
+
+                if retries >= MAX_RETRIES:
+                    return Response({'error': 'Max retries reached, no suitable data found'}, status=500)
+        
         else:
             return Response(serializer.errors, status=400)
       
@@ -199,3 +283,48 @@ def user_data(request):
         return JsonResponse({'isAuthenticated': True, 'user': serializer.data})
     else:
         return JsonResponse({'isAuthenticated': False, 'user': None}, status=401)
+    
+class SearchHotels(APIView):
+    
+
+    def post(self, request):
+        data = request.data
+        
+        serializer = SearchHotelDataQuerySerializer(data=data)
+
+        if serializer.is_valid():
+
+            query = {
+                "arrival_date": serializer.data['arrival_date'],
+                "departure_date": serializer.data['departure_date'],
+                "adults": serializer.data['adults'],
+                "currency_code": "EUR"
+            }
+
+            response = requests.request("GET", SEARCH_HOTELS_API_URL, headers=HEADERS, params=query)
+            
+            return Response(response.json())
+        else:
+            return Response(serializer.errors, status=400)
+        
+class SearchHotelDetail(APIView):
+    def post(self, request):
+        data = request.data
+        
+        serializer = SearchHotelDetailSerializer(data=data)
+
+        if serializer.is_valid():
+            
+            query = {
+                "hotel_id":serializer.data['hotel_id'],
+                "arrival_date":serializer.data['arrival_date'],
+                "departure_date":serializer.data['departure_date'],
+                "adults":serializer.data['adults'],
+                "currency_code":"EUR"
+            }
+
+            response = requests.request("GET", SEARCH_HOTELDETAIL_API_URL, headers=HEADERS, params=query)
+            
+            return Response(response.json())
+        else:
+            return Response(serializer.errors, status=400)

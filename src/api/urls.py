@@ -6,7 +6,7 @@ from .views import (
     CostOfLivingList, SearchFlights,
     FlightList, HotelList, FlightDetail,
     HotelDetail, FlightByOrigin, FlightByDestination,
-    user_data
+    user_data, SearchHotels, SearchHotelDetail
 )
 
 urlpatterns = [
@@ -25,5 +25,7 @@ urlpatterns = [
     path('hotel/<int:pk>/', HotelDetail.as_view(), name='hotel-detail'),
     path('flights/origin/<int:pk>/', FlightByOrigin.as_view(), name='flight-by-origin'),
     path('flights/destination/<int:pk>/', FlightByDestination.as_view(), name='flight-by-destination'),
-    path('user_data/', user_data, name='user_data')
+    path('user_data/', user_data, name='user_data'),
+    path('search/hotels/', SearchHotels.as_view(), name='search-hotels'),
+    path('search/hotels/details/', SearchHotelDetail.as_view(), name='search-hotel-detail'),
 ]

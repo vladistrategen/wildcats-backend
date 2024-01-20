@@ -185,7 +185,9 @@ class SearchFlights(APIView):
             print("JSON decode error:", e)
 
     def formatResponse(self, data):
-        currency_converter = CurrencyRates()
+        currencies = [] 
+        with open('/app/Scripts/currencies.json', 'r', encoding='utf-8') as file:
+            currencies = json.load(file)
         response = {
             'search_id': data[0]['search_id'],
             'proposals': [] 
@@ -208,9 +210,10 @@ class SearchFlights(APIView):
                     url = terms[first_key].get('url', None)  # Safely get the URL, defaults to None if not found
                     currency = terms[first_key].get('currency', None)
                     price = terms[first_key].get('price', None)
-                    if currency and currency != 'EUR':
+                    if currency and currency != 'eur':
                         try:
-                            price = currency_converter.convert(str(currency).upper(), 'EUR', price)
+                            exchange_rate = currencies[currency]['inverseRate']
+                            price = price * exchange_rate
                             price = round(price, 2)
                         except Exception as e:
                             print(f"Error converting currency: {e}")

@@ -17,7 +17,8 @@ from apps.CostOfLivingData.models import CostOfLivingData
 from apps.FlightData.models import FlightData
 from apps.HotelData.models import HotelData
 from django.contrib.auth.decorators import login_required
-from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchTravelDataQuerySerializer, FlightDataSerializer, HotelDataSerializer, UserSerializer, SearchHotelDetailSerializer, SearchHotelDataQuerySerializer
+from .serializers import CitySerializer, CountrySerializer, CostOfLivingDataSerializer, SearchFlightDetailSerializer, SearchTravelDataQuerySerializer, FlightDataSerializer, HotelDataSerializer, UserSerializer, SearchHotelDetailSerializer, SearchHotelDataQuerySerializer
+from forex_python.converter import CurrencyRates
 
 ENV_PATH = Path(__file__).resolve().parent.parent / '.env'
 env = environ.Env()
@@ -25,11 +26,13 @@ env.read_env(ENV_PATH)
 TRAVELPAYOUTS_API_KEY = env('TRAVELPAYOUTS_API_KEY')
 TRAVELPAYOUTS_API_MARKER = env("TRAVELPAYOUTS_API_MARKER")
 RAPID_API_KEY = env('RAPID_API_KEY')
+RAPID_API_BOOKING_KEY= env('RAPID_API_BOOKING_KEY')
 RAPID_API_HOST = env('RAPID_API_HOST')
 SEARCH_FLIGHTS_API_URL = "http://api.travelpayouts.com/v1/flight_search/"
 SEARCH_FLIGHTS_DETAILS_API_URL = "http://api.travelpayouts.com/v1/flight_search_results"
 SEARCH_HOTELS_API_URL = "https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotels"
 SEARCH_HOTELDETAIL_API_URL = "https://booking-com15.p.rapidapi.com/api/v1/hotels/getHotelDetails"
+SEARCH_HOTELS_DESTINATION_API_URL = 'https://booking-com15.p.rapidapi.com/api/v1/hotels/searchDestination'
 
 
 class CityList(APIView):
@@ -131,7 +134,6 @@ class SearchFlights(APIView):
 
     def get_search_id(self, data):
         ip = socket.gethostbyname(socket.gethostname())
-        print(ip)
         currency_code = "EUR"
         host = 'wildcats'
         locale = 'en'
@@ -141,7 +143,6 @@ class SearchFlights(APIView):
         origin = data["from_iata"]
         trip_class = 'Y'
         signature = self.create_signature(currency_code, host, locale, adults, date, destination, origin, trip_class, ip)
-        print(signature)
         HEADERS = {
             'Content-Type': 'application/json',
         }
@@ -182,7 +183,59 @@ class SearchFlights(APIView):
 
         except json.decoder.JSONDecodeError as e:
             print("JSON decode error:", e)
-            
+
+    def formatResponse(self, data):
+        currency_converter = CurrencyRates()
+        response = {
+            'search_id': data[0]['search_id'],
+            'proposals': [] 
+        }
+        for item in data:
+            for proposal in item['proposals']:
+                airline = proposal['carriers'][0]
+                stops = len(proposal['stops_airports']) - 1
+                airport_stops = proposal['stops_airports']
+                terms = proposal['terms']
+                local_start_time = proposal['segment'][0]['flight'][0]['departure_time']
+                local_end_time = proposal['segment'][len(proposal['segment']) - 1]['flight'][len(proposal['segment'][len(proposal['segment']) - 1]['flight']) - 1]['arrival_time']
+                departure_date = proposal['segment'][0]['flight'][0]['departure_date']
+                arrival_date = proposal['segment'][len(proposal['segment']) - 1]['flight'][len(proposal['segment'][len(proposal['segment']) - 1]['flight']) - 1]['arrival_date']
+                origin_airport = proposal['segments_airports'][0][0]
+                destination_airport = proposal['segments_airports'][len(proposal['segments_airports']) - 1][1]
+                
+                if terms:
+                    first_key = next(iter(terms))  # Get the first key in the terms dictionary
+                    url = terms[first_key].get('url', None)  # Safely get the URL, defaults to None if not found
+                    currency = terms[first_key].get('currency', None)
+                    price = terms[first_key].get('price', None)
+                    if currency and currency != 'EUR':
+                        try:
+                            price = currency_converter.convert(str(currency).upper(), 'EUR', price)
+                            price = round(price, 2)
+                        except Exception as e:
+                            print(f"Error converting currency: {e}")
+                            # Handle conversion error (e.g., set price to None or keep as is)
+
+
+                    proposal_data = {
+                        'airline': airline,
+                        'no_stops': stops,
+                        'url': url,
+                        'currency': currency,
+                        'price': price,
+                        'local_start_time': local_start_time,
+                        'local_end_time': local_end_time,
+                        'stops_airports': airport_stops,
+                        'origin_airport': origin_airport,
+                        'destination_airport': destination_airport,
+                        'departure_date': departure_date,
+                        'arrival_date': arrival_date
+                    }
+
+                    response['proposals'].append(proposal_data)
+        
+        return response
+
     def post(self, request):
         serializer = SearchTravelDataQuerySerializer(data=request.data)
         
@@ -210,7 +263,7 @@ class SearchFlights(APIView):
 
                     # Check if any item has an empty 'proposals' array
                     if all(len(item.get('proposals', [])) > 0 for item in data):
-                        return Response(data)
+                        return Response(self.formatResponse(data))
                     else:
                         retries += 1
 
@@ -220,10 +273,37 @@ class SearchFlights(APIView):
 
                 if retries >= MAX_RETRIES:
                     return Response({'error': 'Max retries reached, no suitable data found'}, status=500)
+                
         
         else:
             return Response(serializer.errors, status=400)
-      
+
+class SearchFlightDetail(APIView):
+    def get_search_url(self, search_id, url):
+        base_url = "http://api.travelpayouts.com/v1/flight_searches/{}/clicks/{}.json?marker={}"
+        return base_url.format(search_id, url, TRAVELPAYOUTS_API_MARKER)
+    
+    def post(self, request):
+        
+        data = request.data
+        
+        serializer = SearchFlightDetailSerializer(data=data)
+
+        if serializer.is_valid():
+            url = self.get_search_url(serializer.data['search_id'], serializer.data['url'])
+            print(url)
+            response = requests.get(url)
+
+            result = response.json().get('url', None)
+
+            if result is None:
+                return Response({'error': 'No URL found'}, status=500)
+            else:
+                return Response({'url': result})
+
+            MAX_RETRIES = 5
+        return Response(serializer.errors, status=400)
+
 class FlightList(APIView):
     def get(self, request, format=None):
         flights = FlightData.objects.all()
@@ -285,19 +365,56 @@ def user_data(request):
         return JsonResponse({'isAuthenticated': False, 'user': None}, status=401)
     
 class SearchHotels(APIView):
-    
+    def getSearchID(self, data):
+        HEADERS = {
+            'X-RapidAPI-Key': RAPID_API_BOOKING_KEY,
+            'X-RapidAPI-Host': 'booking-com15.p.rapidapi.com'
+        }
+
+        querystring = {"query":data['city_iata']}
+
+        try:
+            response = requests.request("GET", SEARCH_HOTELS_DESTINATION_API_URL, headers=HEADERS, params=querystring)
+            response.raise_for_status()  # Raise an exception for non-200 status codes
+
+            # Try to parse JSON
+            # get the data array from the json response
+            print (response.json())
+            data = response.json().get('data')
+
+            for item in data:
+                if item.get('search_type') == 'city':
+                    return {
+                        'dest_id': item.get('dest_id'),
+                        'dest_type': item.get('dest_type'),
+                    }
+                
+            return None
+        except requests.exceptions.RequestException as e:
+            print("Request error:", e)
 
     def post(self, request):
         data = request.data
         
         serializer = SearchHotelDataQuerySerializer(data=data)
 
+
         if serializer.is_valid():
+            searchParams = self.getSearchID(serializer.data)
+            if searchParams is None:
+                return Response({'error': 'No search params found'}, status=500)
+            
+            HEADERS = {
+                'X-RapidAPI-Key': RAPID_API_BOOKING_KEY,
+                'X-RapidAPI-Host': 'booking-com15.p.rapidapi.com'
+            }
 
             query = {
                 "arrival_date": serializer.data['arrival_date'],
                 "departure_date": serializer.data['departure_date'],
+                'search_type': 'city',
                 "adults": serializer.data['adults'],
+                "dest_id": searchParams['dest_id'],
                 "currency_code": "EUR"
             }
 
@@ -314,6 +431,11 @@ class SearchHotelDetail(APIView):
         serializer = SearchHotelDetailSerializer(data=data)
 
         if serializer.is_valid():
+
+            HEADERS = {
+                'X-RapidAPI-Key': RAPID_API_BOOKING_KEY,
+                'X-RapidAPI-Host': 'booking-com15.p.rapidapi.com'
+            }
             
             query = {
                 "hotel_id":serializer.data['hotel_id'],

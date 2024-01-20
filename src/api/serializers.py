@@ -71,3 +71,6 @@ class SearchHotelDetailSerializer(serializers.Serializer):
     departure_date = serializers.DateField(required=True)
     adults = serializers.IntegerField(required=False)
     
+class SearchFlightDetailSerializer(serializers.Serializer):
+    search_id = serializers.CharField(required=True)
+    url = serializers.IntegerField(required=True)

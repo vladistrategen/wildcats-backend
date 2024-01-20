@@ -6,10 +6,7 @@ def health_check(request):
     return JsonResponse({"status": "ok"})
 
 def index(request):
-    if request.user.is_authenticated:
-        return render(request, 'index.html')
-    else:
-        return redirect('/login/')
+    return render(request, 'index.html')
     
 def login(request):
     try:

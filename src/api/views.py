@@ -28,7 +28,7 @@ TRAVELPAYOUTS_API_MARKER = env("TRAVELPAYOUTS_API_MARKER")
 RAPID_API_KEY = env('RAPID_API_KEY')
 RAPID_API_BOOKING_KEY= env('RAPID_API_BOOKING_KEY')
 RAPID_API_HOST = env('RAPID_API_HOST')
-SEARCH_FLIGHTS_API_URL = "http://api.travelpayouts.com/v1/flight_search/"
+SEARCH_FLIGHTS_API_URL = "http://api.travelpayouts.com/v1/flight_search"
 SEARCH_FLIGHTS_DETAILS_API_URL = "http://api.travelpayouts.com/v1/flight_search_results"
 SEARCH_HOTELS_API_URL = "https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotels"
 SEARCH_HOTELDETAIL_API_URL = "https://booking-com15.p.rapidapi.com/api/v1/hotels/getHotelDetails"
@@ -130,7 +130,7 @@ class SearchAccomodations(APIView):
 class SearchFlights(APIView):
     
     def create_signature(self, currency_code, host, locale, adults, date, destination, origin, trip_class, ip):
-        return hashlib.md5(f'{TRAVELPAYOUTS_API_KEY}:{currency_code}:{host}:{locale}:{TRAVELPAYOUTS_API_MARKER}:{adults}:0:0:{date}:{destination}:{origin}:{trip_class}:{ip}'.encode('utf-8')).hexdigest()
+        return hashlib.md5(f'{TRAVELPAYOUTS_API_KEY}:{host}:{locale}:{TRAVELPAYOUTS_API_MARKER}:{adults}:0:0:{date}:{destination}:{origin}:{trip_class}:{ip}'.encode('utf-8')).hexdigest()
 
     def get_search_id(self, data):
         ip = socket.gethostbyname(socket.gethostname())
@@ -151,7 +151,6 @@ class SearchFlights(APIView):
         BODY = {
             'signature': signature,
             'marker': TRAVELPAYOUTS_API_MARKER,
-            "currency_code" : currency_code,
             'host': host,
             'user_ip': ip,
             'locale': locale,

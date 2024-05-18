@@ -103,6 +103,9 @@ DATABASES = {
         'PASSWORD': env('MYSQL_PASSWORD'),
         'HOST': 'db',  # This should be the name of your db service in docker-compose
         'PORT': env('MYSQL_PORT'),
+        'TEST': {
+            'NAME': f'test_{env("MYSQL_DATABASE")}',
+        },
     }
 }
 

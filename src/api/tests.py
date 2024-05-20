@@ -1,9 +1,11 @@
 from django.test import TestCase
+from apps import City
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
 from unittest.mock import patch, Mock
 import requests
+from apps.City.models import City
 
 class SearchFlightsTest(TestCase):
 
@@ -72,6 +74,7 @@ class SearchFlightsTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('proposals', response.data)
         self.assertGreater(len(response.data['proposals']), 0)
+        print(response.data)
 
     def test_search_flights_invalid_payload(self):
         response = self.client.post(self.url, self.invalid_payload, format='json')
@@ -103,3 +106,4 @@ class SearchFlightsTest(TestCase):
         response = self.client.post(self.url, self.valid_payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
         self.assertIn('error', response.data)
+

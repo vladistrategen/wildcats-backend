@@ -253,7 +253,7 @@ class SearchFlights(APIView):
                 'uuid': search_id
             }
 
-            MAX_RETRIES = 5  # Set a maximum number of retries to avoid infinite loop
+            MAX_RETRIES = 5  
             retries = 0
 
             while retries < MAX_RETRIES:

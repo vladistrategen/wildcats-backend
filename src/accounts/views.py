@@ -1,6 +1,6 @@
 # views.py
 from django.shortcuts import render, redirect
-from .forms import PaymentForm, SignUpForm
+from .forms import LoginForm, PaymentForm, SignUpForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 import csv
@@ -26,19 +26,30 @@ def signup_view(request):
 
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            # Redirect to a success page, e.g., home page
-            return redirect('/')  # Replace 'home' with the name of your home URL
+        form = LoginForm(request.POST)  # Create a form instance with POST data
+        
+        if form.is_valid():
+            # Extract validated username and password from the form
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            
+            # Authenticate the user
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                # Redirect to a success page, e.g., home page
+                return redirect('/')  # Update this as needed for your URL configuration
+            else:
+                # If authentication fails, add an error message
+                messages.error(request, 'Invalid username or password.')
         else:
-            messages.error(request, 'Invalid username or password.')
+            # If form is not valid, render the form with errors
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        # If not a POST request, create a blank form
+        form = LoginForm()
 
-    return render(request, 'accounts/login.html')
+    return render(request, 'accounts/login.html', {'form': form})
 
 
 def home_view(request):

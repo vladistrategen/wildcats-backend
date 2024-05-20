@@ -52,3 +52,9 @@ class PaymentForm(forms.Form):
     class Meta:
         fields = ('card_number', 'expiration_date', 'security_code')
 
+class LoginForm(forms.Form):
+    username = forms.CharField(label='Username', max_length=63, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
+    password = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+
+    class Meta:
+        fields = ('username', 'password')

@@ -13,11 +13,12 @@ services:
     networks:
       - wildcats-network
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 20
       interval: 10s
       start_period: 40s
+
   django-server:
     build:
       context: ..
@@ -26,7 +27,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "127.0.0.1:8000:8000"
+      - "8000:8000"
     networks:
       - wildcats-network
     volumes:
@@ -34,7 +35,7 @@ services:
       - ../src:/app/src
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
-      interval: 1m # TO BE CHANGED FOR PRODUCTION
+      interval: 1m
       timeout: 10s
       retries: 3
       start_period: 40s
@@ -46,3 +47,4 @@ volumes:
 
 networks:
   wildcats-network:
+    external: true

@@ -6,6 +6,70 @@ from django.urls import reverse
 from unittest.mock import patch, Mock
 import requests
 from apps.City.models import City
+from api.serializers import SearchHotelDataQuerySerializer
+
+class SearchHotelsTest(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.url = reverse('search-hotels')
+        self.valid_payload = {
+            "adults": 2,
+            "arrival_date": "2024-06-01",
+            "departure_date": "2024-06-07",
+            "city_iata": "NYC"
+        }
+        self.invalid_payload = {
+            "adults": 2,
+            "arrival_date": "",
+            "departure_date": "",
+            "city_iata": ""
+        }
+
+    @patch('api.views.requests.get')
+    def test_search_hotels_success(self, mock_get):
+        # Mocking the destination API response
+        mock_dest_response = Mock()
+        mock_dest_response.status_code = 200
+        mock_dest_response.json.return_value = {
+            'data': [
+                {
+                    'search_type': 'city',
+                    'dest_id': 'test-dest-id',
+                    'dest_type': 'test-dest-type'
+                }
+            ]
+        }
+        mock_get.side_effect = [mock_dest_response, Mock(status_code=200, json=lambda: {'hotels': ['hotel1', 'hotel2']})]
+
+        response = self.client.post(self.url, self.valid_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('hotels', response.data['data'])
+        self.assertGreater(len(response.data['data']['hotels']), 0)
+
+    def test_search_hotels_invalid_payload(self):
+        response = self.client.post(self.url, self.invalid_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('arrival_date', response.data)
+        self.assertIn('departure_date', response.data)
+        self.assertIn('city_iata', response.data)
+        self.assertEqual(response.data['arrival_date'][0].code, 'invalid')
+        self.assertEqual(response.data['departure_date'][0].code, 'invalid')
+        self.assertEqual(response.data['city_iata'][0].code, 'blank')
+
+    @patch('api.views.requests.get')
+    def test_search_hotels_no_search_params(self, mock_get):
+        mock_dest_response = Mock()
+        mock_dest_response.status_code = 200
+        mock_dest_response.json.return_value = {
+            'data': []
+        }
+        mock_get.return_value = mock_dest_response
+
+        response = self.client.post(self.url, self.valid_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn('error', response.data)
+
 
 class SearchFlightsTest(TestCase):
 

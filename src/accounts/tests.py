@@ -8,6 +8,8 @@ from accounts.forms import LoginForm, PaymentForm, SignUpForm
 from django.urls import reverse
 from rest_framework import status
 
+import csv
+
 class SignUpFormTests(TestCase):
     def test_valid_form(self):
         form_data = {
@@ -99,6 +101,28 @@ class PaymentFormTests(TestCase):
         }
         form = PaymentForm(data=form_data)
         self.assertTrue(form.is_valid())
+
+    def test_save_to_csv(self):
+        form_data = {
+            'card_number': '1234567890123456',
+            'expiration_date': '12/25',
+            'security_code': '123',
+        }
+        form = PaymentForm(data=form_data)
+        self.assertTrue(form.is_valid())
+
+        form.save_to_csv()
+        test_file_path = 'payment_data.csv'
+        with open(test_file_path, 'r') as csvfile:
+            reader = csv.DictReader(csvfile)
+            rows = list(reader)
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]['card_number'], form_data['card_number'])
+            self.assertEqual(rows[0]['expiration_date'], form_data['expiration_date'])
+            self.assertEqual(rows[0]['security_code'], form_data['security_code'])
+        
+
+
 
     def test_invalid_form(self):
         # Test with missing required fields

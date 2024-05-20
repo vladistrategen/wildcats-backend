@@ -381,7 +381,7 @@ class SearchHotels(APIView):
 
             # Try to parse JSON
             # get the data array from the json response
-            print (response.json())
+            # print (response.json())
             data = response.json().get('data')
 
             for item in data:

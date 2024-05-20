@@ -51,6 +51,23 @@ class PaymentForm(forms.Form):
     
     class Meta:
         fields = ('card_number', 'expiration_date', 'security_code')
+        
+    def save_to_csv(self):
+        file_path = 'payment_data.csv'  # Specify the absolute path if needed
+        with open(file_path, 'a', newline='') as csvfile:
+            fieldnames = ['card_number', 'expiration_date', 'security_code']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            # Write the header only if the file is empty
+            if csvfile.tell() == 0:
+                writer.writeheader()
+
+            writer.writerow({
+                'card_number': self.cleaned_data['card_number'],
+                'expiration_date': self.cleaned_data['expiration_date'],
+                'security_code': self.cleaned_data['security_code']
+            })
+            
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Username', max_length=63, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
